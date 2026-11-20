@@ -142,3 +142,43 @@ func prettyPrintJSON(data DSLData) error {
         "dracula",
     )
 }
+
+func getRouterLog(addr string, auth string) string {
+    url := addr + "/cgi/log"
+    req, err := http.NewRequest(
+        http.MethodGet,
+        url,
+        nil,
+    )
+
+    if err != nil {
+        panic(err)
+    }
+
+    // Set Headers + Auth
+    req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0")
+    req.Header.Add("Referer", addr)
+    req.Header.Add("Connection", "keep-alive")
+    req.Header.Add("Cookie", "Authorization="+auth)
+
+    resp, err := client.Do(req)
+
+    if err != nil {
+        panic(err)
+    }
+
+    defer func(Body io.ReadCloser) {
+        err := Body.Close()
+        if err != nil {
+            panic(err)
+        }
+    }(resp.Body)
+
+    body, err := io.ReadAll(resp.Body)
+
+    if err != nil {
+        panic(err)
+    }
+
+    return string(body)
+}

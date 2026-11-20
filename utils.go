@@ -11,7 +11,7 @@ import (
     "github.com/alecthomas/chroma/v2/quick"
 )
 
-func getTplinkDslData() string {
+func getTplinkDslData(address string, routerAuth string) string {
     payload := strings.Join([]string{
         "[WAN_DSL_INTF_CFG#1,0,0,0,0,0#0,0,0,0,0,0]0,12",
         "status",
@@ -37,7 +37,7 @@ func getTplinkDslData() string {
         "X_TP_US_ErroredSecs",
     }, "\r\n") + "\r\n"
 
-    url := ROUTERADDRESS + "/cgi?1&1"
+    url := address + "/cgi?1&1"
 
     req, err := http.NewRequest(
         http.MethodPost,
@@ -45,15 +45,13 @@ func getTplinkDslData() string {
         strings.NewReader(payload),
     )
 
-
-
     if err != nil {
         panic(err)
     }
 
     // Set Headers + Auth
     req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0")
-    req.Header.Add("Referer", ROUTERADDRESS)
+    req.Header.Add("Referer", address)
     req.Header.Add("Connection", "keep-alive")
     req.Header.Add("Cookie", "Authorization="+routerAuth)
 
@@ -78,7 +76,7 @@ func getTplinkDslData() string {
 }
 
 func parseRouterDslResponse(data string) DSLData {
-    dsl := DSLData{}
+    var dsl DSLData
     for line := range strings.Lines(data) {
         parts := strings.Split(strings.TrimSpace(line), "=")
 

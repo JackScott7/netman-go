@@ -15,3 +15,13 @@ type DSLData struct {
     CRCErrors                 int32   `json:"Errors(CRC) Downstream"`
     Status                    string  `json:"Status"`
 }
+
+type ClientData struct {
+    IPAddress          string `json:"IPAddress"`
+    AddressSource      string `json:"AddressSource"`
+    LeaseTimeRemaining int32  `json:"LeaseTimeRemaining"`
+    MACAddress         string `json:"MACAddress"`
+    Hostname           string `json:"Hostname"`
+    ConnectionType     string `json:"ConnectionType"`
+    Active             bool   `json:"Active"`
+}

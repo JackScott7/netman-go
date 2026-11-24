@@ -91,6 +91,64 @@ func getRouterLog(auth string) string {
     return body
 }
 
+func getConnectedRouterClients(auth string) string {
+    payload := "[LAN_HOST_ENTRY#0,0,0,0,0,0#0,0,0,0,0,0]0,0\r\n"
+    body := RouterRequestDo(http.MethodPost, "/cgi?5", &payload, auth)
+    return body
+}
+
+func parseRouterClients(data string) []ClientData {
+    var clients []ClientData
+
+    for range strings.Count(data, "IPAddress") {
+        var client ClientData
+
+        for line := range strings.Lines(data) {
+            // strip out each line after processing it
+            _, data, _ = strings.Cut(data, line)
+            // discarding before, found and re-assigning the new data to 'data'
+
+            if strings.HasPrefix(line, "[error") {
+                continue
+            }
+
+            if strings.HasPrefix(line, "[") {
+                if !strings.HasPrefix(line, "[1") {
+                    break
+                }
+                continue
+            }
+
+            parts := strings.Split(strings.TrimSpace(line), "=")
+            key, value := parts[0], parts[1]
+
+            switch {
+            case key == "IPAddress":
+                client.IPAddress = value
+            case key == "addressSource":
+                client.AddressSource = value
+            case key == "leaseTimeRemaining":
+                conv, _ := strconv.ParseInt(value, 10, 32)
+                client.LeaseTimeRemaining = int32(conv)
+            case key == "MACAddress":
+                client.MACAddress = value
+            case key == "hostName":
+                client.Hostname = value
+            case key == "X_TP_ConnType":
+                client.ConnectionType = value
+            case key == "active":
+                if value == "1" {
+                    client.Active = true
+                } else {
+                    client.Active = false
+                }
+            }
+        }
+        clients = append(clients, client)
+    }
+    return clients
+}
+
 func parseRouterDslResponse(data string) DSLData {
     var dsl DSLData
     for line := range strings.Lines(data) {
@@ -145,7 +203,7 @@ func parseRouterDslResponse(data string) DSLData {
     return dsl
 }
 
-func prettyPrintJSON(data DSLData) error {
+func prettyPrintJSON(data any) error {
     j, err := json.MarshalIndent(data, "", "  ")
     if err != nil {
         panic(err)

@@ -53,7 +53,16 @@ func main() {
         data := getRouterLog(auth)
         fmt.Println(data)
     } else if *restartFlag {
-        fmt.Println("Not implemented yet")
+        data := getTplinkDslData(auth)
+        parsed := parseRouterDslResponse(data)
+        if err := prettyPrintJSON(parsed); err != nil {
+            panic(err)
+        }
+        if body, err := restartRouter(auth); !err {
+            fmt.Print("Could not restart the router:\n", body)
+            os.Exit(1)
+        }
+        fmt.Println("\nSuccessfully restarted the router")
     } else {
         data := getTplinkDslData(auth)
         parsed := parseRouterDslResponse(data)

@@ -91,6 +91,13 @@ func getRouterLog(auth string) string {
     return body
 }
 
+func restartRouter(auth string) (string, bool) {
+    payload := "[ACT_REBOOT#0,0,0,0,0,0#0,0,0,0,0,0]0,0\r\n"
+    body := RouterRequestDo(http.MethodPost, "/cgi?7", &payload, auth)
+
+    return body, body == "[error]0"
+}
+
 func getConnectedRouterClients(auth string) string {
     payload := "[LAN_HOST_ENTRY#0,0,0,0,0,0#0,0,0,0,0,0]0,0\r\n"
     body := RouterRequestDo(http.MethodPost, "/cgi?5", &payload, auth)
